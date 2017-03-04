@@ -1,22 +1,50 @@
 #!/usr/bin/env python
+"""
+promise_keeper module provides the PromiseKeeper class.  The PromiseKeeper
+class makes asynchronous programming easier by managing threads and 
+execution for the developer.  Sample usage:
+
+    >>> from promise_keeper import PromiseKeeper
+    >>> from time import sleep
+    >>> from random import random
+    >>> def slow_add(x, y):
+    ...     sleep(random() * 2)
+    ...     return x+y
+    ...
+    >>> pc = PromiseKeeper()
+    >>> p = pc.submit(slow_add, (200, 50))
+    >>> while not p.is_ready():
+    ...     sleep(0.01)
+    ...
+    >>> print p.get_result()
+    250
+    >>>
+
+"""
 
 from threading import Event, Lock, Thread
 from Queue import Queue, Empty
 from datetime import datetime
+from time import sleep
+
 
 class PromiseKeeper(object):
 
-    def __init__(self, number_threads=1):
+    def __init__(self, number_threads=1, auto_start=True, auto_stop=True):
         self._number_threads = number_threads
         self._threads = []
         self._work_queue = Queue()
+        self._auto_start = auto_start
+        self._auto_stop = auto_stop
 
     def submit(self, task, args=[], kwargs={}, notify=None):
         """
-        Submit a task to be scheduled in the PromiseKeeper
+        Submit a task to be scheduled in the PromiseKeeper's thread pool.
         """
         promise = Promise(task, args, kwargs, notify)
         self._work_queue.put(promise)
+        if (self._auto_start and not self.is_running()):
+            self.start()
         return promise
 
     def start(self):
@@ -31,6 +59,10 @@ class PromiseKeeper(object):
             for i in range(self._number_threads) \
         ]
         [t.start() for t in self._threads]
+        if self._auto_stop:
+            self._auto_stop_monitor = _PromiseKeeperAutoStopMonitor( \
+                self._work_queue, self)
+            self._auto_stop_monitor.start()
 
     def stop(self, block=True):
         """
@@ -42,6 +74,7 @@ class PromiseKeeper(object):
         self._stop_event.set()
         [t.join() for t in self._threads]
         self._threads = []
+        self._auto_stop_monitor = None
 
     def is_running(self):
         """
@@ -78,6 +111,35 @@ class _PromiseWorkerThread(Thread):
             self._work_queue.task_done()
 
 
+class _PromiseKeeperAutoStopMonitor(Thread):
+    """
+    Checks to see if the task queue is empty for a while, then shuts down the
+    PromiseKeeper.
+
+    Uses a simple strategy.  Could be improved.
+    """
+
+    def __init__(self, work_queue, promise_keeper):
+        Thread.__init__(self)
+        self._work_queue = work_queue
+        self._promise_keeper = promise_keeper
+
+    def run(self):
+        queue_empty_since = None
+        while True:
+            if self._work_queue.empty():
+                if queue_empty_since is None:
+                    queue_empty_since = datetime.now()
+                else:
+                    if (datetime.now() - queue_empty_since).seconds > 0:
+                        self._promise_keeper.stop()
+                        break
+            else:
+                queue_empty_since = None
+            sleep(0.05)
+
+
+
 class Promise(object):
     """A promise of future results"""
 
@@ -102,12 +164,20 @@ class Promise(object):
             return "<Promise: waiting>"
 
     def is_ready(self):
+        """
+        Returns True if this promise has been executed in the thead pool and
+        has either resulted in a result or an exception.  Otherwise returns
+        False
+        """
         self._lock.acquire()
         completed_on = self._completed_on
         self._lock.release()
         return completed_on is not None
 
     def has_started(self):
+        """
+        Returns True if this promise has begun processing in the thread pool.
+        """
         return self.get_started_on() is not None
 
     def get_execution_time(self):
