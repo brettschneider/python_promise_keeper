@@ -24,6 +24,11 @@ Copyright (c) 2017, Steve Brettschneider.
 License: MIT (see LICENSE for details)
 """
 
+__author__ = 'Steve Brettschneider'
+__version__ = '0.1'
+__license__ = 'MIT'
+
+
 from threading import Event, Lock, Thread
 from Queue import Queue, Empty
 from datetime import datetime
