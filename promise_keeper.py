@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 promise_keeper module provides the PromiseKeeper class.  The PromiseKeeper
-class makes asynchronous programming easier by managing threads and 
+class makes asynchronous programming easier by managing threads and
 execution for the developer.  Sample usage:
 
     >>> from promise_keeper import PromiseKeeper
@@ -36,6 +36,9 @@ from time import sleep
 
 
 class PromiseKeeper(object):
+    """
+    Provides asyncronous execution via threads.
+    """
 
     def __init__(self, number_threads=1, auto_start=True, auto_stop=True):
         self._number_threads = number_threads
@@ -43,6 +46,8 @@ class PromiseKeeper(object):
         self._work_queue = Queue()
         self._auto_start = auto_start
         self._auto_stop = auto_stop
+        self._auto_stop_monitor = None
+        self._stop_event = None
 
     def submit(self, task, args=[], kwargs={}, notify=None):
         """
@@ -50,7 +55,7 @@ class PromiseKeeper(object):
         """
         promise = Promise(task, args, kwargs, notify)
         self._work_queue.put(promise)
-        if (self._auto_start and not self.is_running()):
+        if self._auto_start and not self.is_running():
             self.start()
         return promise
 
@@ -63,9 +68,9 @@ class PromiseKeeper(object):
         self._stop_event = Event()
         self._threads = [ \
             _PromiseWorkerThread(self._work_queue, self._stop_event) \
-            for i in range(self._number_threads) \
+            for _ in range(self._number_threads) \
         ]
-        [t.start() for t in self._threads]
+        [t.start() for t in self._threads] # pylint: disable=expression-not-assigned
         if self._auto_stop:
             self._auto_stop_monitor = _PromiseKeeperAutoStopMonitor( \
                 self._work_queue, self)
@@ -79,7 +84,8 @@ class PromiseKeeper(object):
         if not self.is_running():
             raise PromiseKeeperStateError("PromiseKeeper isn't running.")
         self._stop_event.set()
-        [t.join() for t in self._threads]
+        if block:
+            [t.join() for t in self._threads] # pylint: disable=expression-not-assigned
         self._threads = []
         self._auto_stop_monitor = None
 
@@ -104,17 +110,18 @@ class _PromiseWorkerThread(Thread):
                 promise = self._work_queue.get_nowait()
             except Empty:
                 continue
-            promise._set_started_on(datetime.now())
+            promise._set_started_on(datetime.now()) # pylint: disable=protected-access
             try:
-                promise._set_result(promise._task(*promise._args, **promise._kwargs))
-            except Exception as e:
-                promise._set_exception(e)
-            if promise._notify is not None:
+                promise._set_result(promise.get_task()(*promise.get_args(), \
+                    **promise.get_kwargs()))  # pylint: disable=protected-access
+            except Exception as exp: # pylint: disable=broad-except
+                promise._set_exception(exp)  # pylint: disable=protected-access
+            if promise._notify is not None:  # pylint: disable=protected-access
                 try:
-                    promise._notify(promise)
-                except:
+                    promise._notify(promise) # pylint: disable=protected-access
+                except: # pylint: disable=bare-except
                     pass
-            promise._set_completed_on(datetime.now())
+            promise._set_completed_on(datetime.now()) # pylint: disable=protected-access
             self._work_queue.task_done()
 
 
@@ -158,7 +165,7 @@ class Promise(object):
         self._result = None
         self._started_on = None
         self._completed_on = None
-        self._notify = notify 
+        self._notify = notify
         self._lock = Lock()
 
     def __repr__(self):
