@@ -20,6 +20,8 @@ execution for the developer.  Sample usage:
     250
     >>>
 
+Copyright (c) 2017, Steve Brettschneider.
+License: MIT (see LICENSE for details)
 """
 
 from threading import Event, Lock, Thread

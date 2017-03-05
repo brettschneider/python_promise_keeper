@@ -17,3 +17,6 @@ Example usage:
     >>> print promise.result
     256
     >>> pc.stop()
+
+Copyright (c) 2017, Steve Brettschneider.
+License: MIT (see LICENSE for details)
