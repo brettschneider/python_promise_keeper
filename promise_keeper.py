@@ -182,6 +182,18 @@ class Promise(object):
         """
         return self.get_started_on() is not None
 
+    def get_task(self):
+        """Returns the task for this promise."""
+        return self._task
+
+    def get_args(self):
+        """Returns the args for this promise."""
+        return self._args
+
+    def get_kwargs(self):
+        """Returns the kwargs for this promise."""
+        return self._kwargs
+
     def get_execution_time(self):
         """
         Returns the time_delta for execution if completed.  Otherwise returns
