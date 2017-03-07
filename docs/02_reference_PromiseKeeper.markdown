@@ -55,7 +55,8 @@ arguments you want to pass to the __task__.  Notify should be a callable that
 takes a single argument.  The PromiseKeeper will call the specified callable,
 passing the promise associated with the given task when the task is
 completed.  It's essentially a callback that get's called when the work
-is done.
+is done. Submit immediately returns a new Promise object.  This Promise
+can be used to track the progress of the task and review the results.
 
     from promise_keeper import PromiseKeeper
     pk = PromiseKeeper()
@@ -88,3 +89,6 @@ __False__ otherwise.
     def some_method(promise_keeper):
         if not promise_keeper.is_running():
             promise_keeper.start()
+
+Copyright (c) 2017, Steve Brettschneider.
+License: MIT (see LICENSE for details)
