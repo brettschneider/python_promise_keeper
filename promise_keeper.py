@@ -116,12 +116,12 @@ class _PromiseWorkerThread(Thread):
                     **promise.get_kwargs()))  # pylint: disable=protected-access
             except Exception as exp: # pylint: disable=broad-except
                 promise._set_exception(exp)  # pylint: disable=protected-access
+            promise._set_completed_on(datetime.now()) # pylint: disable=protected-access
             if promise._notify is not None:  # pylint: disable=protected-access
                 try:
                     promise._notify(promise) # pylint: disable=protected-access
                 except: # pylint: disable=bare-except
                     pass
-            promise._set_completed_on(datetime.now()) # pylint: disable=protected-access
             self._work_queue.task_done()
 
 
@@ -129,8 +129,6 @@ class _PromiseKeeperAutoStopMonitor(Thread):
     """
     Checks to see if the task queue is empty for a while, then shuts down the
     PromiseKeeper.
-
-    Uses a simple strategy.  Could be improved.
     """
 
     def __init__(self, work_queue, promise_keeper):
@@ -139,19 +137,8 @@ class _PromiseKeeperAutoStopMonitor(Thread):
         self._promise_keeper = promise_keeper
 
     def run(self):
-        queue_empty_since = None
-        while True:
-            if self._work_queue.empty():
-                if queue_empty_since is None:
-                    queue_empty_since = datetime.now()
-                else:
-                    if (datetime.now() - queue_empty_since).seconds > 0:
-                        self._promise_keeper.stop()
-                        break
-            else:
-                queue_empty_since = None
-            sleep(0.05)
-
+        self._work_queue.join()
+        self._promise_keeper.stop()
 
 
 class Promise(object):
