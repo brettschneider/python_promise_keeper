@@ -43,7 +43,7 @@ __get\_execution\_time()__ - If processing of the task has completed, this
 method returns the length of time it took to peform the task.  If the task
 has __not__ completed, this method returns _None_.
 
-__get\_starte\_on()__ - Returns the datetime the task began execution.  If it
+__get\_started\_on()__ - Returns the datetime the task began execution.  If it
 hasn't begin executing, this method returns _None_.
 
 __get\_completed\_on()__ - Returns the datetime the task completed.  If it
