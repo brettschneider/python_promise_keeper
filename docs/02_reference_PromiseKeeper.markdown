@@ -57,9 +57,18 @@ passing the promise associated with the given task when the task is
 completed.  It's essentially a callback that get's called when the work
 is done.
 
+    from promise_keeper import PromiseKeeper
+    pk = PromiseKeeper()
+    p = pk.submit(map, (lambda x: x*x, range(50)))
+
 __start()__ - Starts the PromiseKeeper if it's not already started.  If the
 PromiseKeeper was already running, this method will raise a
 __PromiseKeeperStateError__ exception.
+
+    from promise_keeper import PromiseKeeper
+    pk = PromiseKeeper(auto_start=False)
+    # submit a bunch of requests
+    pk.start()
 
 __stop(block=True)__ - Stops the PromiseKeeper if it's running.  What this means
 is that it will finish up any tasks that are already running, but not start any
@@ -67,5 +76,15 @@ new ones.  If __block__ is __True__ (default), this method will block until all
 currently running tasks complete.  If it's __False__, this method will return
 immediately even though some tasks might still be running.
 
+    from promise_keeper import PromiseKeeper
+    pk = PromiseKeeper(auto_stop=False)
+    # submit a bunch of requests
+    # use their results
+    pk.stop(False)
+
 __is\_running()__ - Returns __True__ if the PromiseKeeper is running.  Returns
 __False__ otherwise.
+
+    def some_method(promise_keeper):
+        if not promise_keeper.is_running():
+            promise_keeper.start()
