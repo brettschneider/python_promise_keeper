@@ -44,6 +44,10 @@ class TestPromiseKeeper(TestCase):
         self.assertEqual(10, p.get_result())
         self.assertIsNone(p.get_exception())
 
+    def test_should_enforce_submit_promise_takes_a_Promise(self):
+        """Should enfore submit_promise requires a Promise"""
+        self.assertRaises(TypeError, self.pk.submit_promise, ('do it',))
+
     def test_should_complete_a_single_task_with_kwargs(self):
         """Should complete a Promise using kwargs."""
         # Implies that auto-stop is functioning properly.
@@ -117,3 +121,38 @@ class TestPromiseKeeper(TestCase):
         pk = PromiseKeeper(auto_start=False)
         p = pk.submit(slow_add, (1, 2))
         self.assertFalse(pk.is_running())
+
+    def test_should_run_results_of_iterator(self):
+        """Should run iterate over all promises in iterator."""
+
+        class test_class(object):
+            def __init__(self):
+                self.promises = []
+
+            def square(self, x):
+                sleep(random() * 1)
+                return x*x
+
+            def generator(self):
+                for i in range(5):
+                    promise = Promise(self.square, (i,))
+                    self.promises.append(promise)
+                    yield promise
+
+        tester = test_class()
+        pk = PromiseKeeper(iterator=tester.generator())
+        
+        while pk.is_running():
+            x = filter(lambda x: x.is_ready(), tester.promises)
+            print len(x), x
+
+        self.assertEqual(5, len(tester.promises))
+        for i in range(5):
+            self.assertEqual(i*i, tester.promises[i].get_result())
+
+    def test_should_enforce_iterator_generates_Promises(self):
+        """Should enforce iterator generates Promises"""
+
+        iterator = iter([1, 2, 3])
+        self.assertRaises(TypeError, PromiseKeeper, kwds={'iterator':iterator})
+

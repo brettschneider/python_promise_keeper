@@ -40,7 +40,8 @@ class PromiseKeeper(object):
     Provides asyncronous execution via threads.
     """
 
-    def __init__(self, number_threads=1, auto_start=True, auto_stop=True):
+    def __init__(self, number_threads=1, auto_start=True, auto_stop=True, \
+                 iterator=None):
         self._number_threads = number_threads
         self._threads = []
         self._work_queue = Queue()
@@ -48,6 +49,9 @@ class PromiseKeeper(object):
         self._auto_stop = auto_stop
         self._auto_stop_monitor = None
         self._stop_event = None
+        if iterator is not None:
+            self._iterator_pump = _PromiseIteratorPump(self, iterator)
+            self._iterator_pump.start()
 
     def submit(self, task, args=[], kwargs={}, notify=None):
         """
@@ -61,6 +65,8 @@ class PromiseKeeper(object):
         """
         Submit a promise to be scheduled in the thread pool.
         """
+        if not isinstance(promise, Promise):
+            raise TypeError('submit_promise requires a Promise argument')
         self._work_queue.put(promise)
         if self._auto_start and not self.is_running():
             self.start()
@@ -81,6 +87,7 @@ class PromiseKeeper(object):
             self._auto_stop_monitor = _PromiseKeeperAutoStopMonitor( \
                 self._work_queue, self)
             self._auto_stop_monitor.start()
+
 
     def stop(self, block=True):
         """
@@ -145,6 +152,24 @@ class _PromiseKeeperAutoStopMonitor(Thread):
     def run(self):
         self._work_queue.join()
         self._promise_keeper.stop()
+
+
+class _PromiseIteratorPump(Thread):
+    """
+    Iterates over the iterator, submitting the Promises that the iterator
+    generates
+    """
+
+    def __init__(self, promise_keeper, iterator):
+        Thread.__init__(self)
+        self._promise_keeper = promise_keeper
+        self._iterator = iterator
+
+    def run(self):
+        for promise in self._iterator:
+            if not isinstance(promise, Promise):
+                raise TypeError('Iterator needs to be of type Promise')
+            self._promise_keeper.submit_promise(promise)
 
 
 class Promise(object):
