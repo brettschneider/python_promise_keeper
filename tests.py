@@ -130,7 +130,7 @@ class TestPromiseKeeper(TestCase):
                 self.promises = []
 
             def square(self, x):
-                sleep(random() * 1)
+#                sleep(random() * 1)
                 return x*x
 
             def generator(self):

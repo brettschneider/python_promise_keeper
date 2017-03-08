@@ -150,6 +150,7 @@ class _PromiseKeeperAutoStopMonitor(Thread):
         self._promise_keeper = promise_keeper
 
     def run(self):
+        sleep(0.1)
         self._work_queue.join()
         self._promise_keeper.stop()
 
