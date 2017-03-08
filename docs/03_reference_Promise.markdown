@@ -15,10 +15,60 @@ _submit_ request.
 
     from promise_keeper import PromiseKeeper
     pk = PromiseKeeper
+
+    # Method 1
     promise = pk.submit(lambda x: x*0.5, (50,))
+
+    # Method 2
+    primise2 = Promise(lambda x: x*2, (25,))
+    pk.submit_promise(promise)
     while not promise.is_ready()
         pass
     print promise
+
+
+###Constructor Arguments###
+
+There are two ways to create a Promise.  The first way is to use the _submit_
+method of a PromiseKeeper instance.  The _submit_ method will construct a
+Promise, submit it to the work queue and then return it to the caller.
+
+The other way to create a Promise is to use the Promise classes constructor.
+This doesn't schedule it to be worked on by any given PromiseKeeper.  You still
+need to submit it to a PromiseKeeper instance using it's _submit\_promise_
+method.
+
+That said, here are the Promise constructor's arguments:
+
+__task__ - This should be a callable that will be executed by a PromiseKeeper
+instance.  This argument is mandatory.
+
+__args__ - This should be a list or tuple of arguments that will be passed to
+the task.  This argument it optional and defaults to an empty list.
+
+__kwargs__ - This should be a dictionary of kwargs that will be passed to the
+task.  This argument is optional argument and default to an empty dictionary.
+
+__notify__ - This should be a callable that takes a single argument.  The
+PromiseKeeper that executes your task will call _notify_ with the Promise
+it executed when the task is done.
+
+    promise_1 = Promise(lambda x: x*x, (25,))
+
+    def promise_done(promise):
+        print promise.get_result()
+
+    promise_2 = Promise(notify=promise_done, task=calculate_pi)
+
+    def get_longest(item_1='', item_2=''):
+        if len(item_1) > len(item_2):
+            return item_1
+        else:
+            return item_2
+
+    promise_3 = Promise(task=get_longest, kwargs={ \
+        'item_1': 'Python', 'item_2': 'rocks'})
+
 
 ###Methods###
 

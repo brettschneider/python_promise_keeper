@@ -54,10 +54,16 @@ class PromiseKeeper(object):
         Submit a task to be scheduled in the PromiseKeeper's thread pool.
         """
         promise = Promise(task, args, kwargs, notify)
+        self.submit_promise(promise)
+        return promise
+
+    def submit_promise(self, promise):
+        """
+        Submit a promise to be scheduled in the thread pool.
+        """
         self._work_queue.put(promise)
         if self._auto_start and not self.is_running():
             self.start()
-        return promise
 
     def start(self):
         """
@@ -144,7 +150,7 @@ class _PromiseKeeperAutoStopMonitor(Thread):
 class Promise(object):
     """A promise of future results"""
 
-    def __init__(self, task, args, kwargs, notify):
+    def __init__(self, task, args=[], kwargs={}, notify=None):
         self._task = task
         self._args = args
         self._kwargs = kwargs

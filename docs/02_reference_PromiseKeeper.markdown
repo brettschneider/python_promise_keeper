@@ -62,6 +62,10 @@ can be used to track the progress of the task and review the results.
     pk = PromiseKeeper()
     p = pk.submit(map, (lambda x: x*x, range(50)))
 
+__submit\_promise(promise)__ - Submit the given Promise to the PromiseKeepers
+work queue.  Does not return anything, but the Promise that is passed to this
+method will be updated by the PromiseKeeper as the task is executed.
+
 __start()__ - Starts the PromiseKeeper if it's not already started.  If the
 PromiseKeeper was already running, this method will raise a
 __PromiseKeeperStateError__ exception.

@@ -3,7 +3,7 @@
 Some simple tests for the promise_keeper module.
 """
 
-from promise_keeper import PromiseKeeper
+from promise_keeper import Promise, PromiseKeeper
 from time import sleep
 from random import random
 from unittest import TestCase
@@ -19,6 +19,13 @@ def slow_div(x, y):
     return x/y
 
 
+def get_longest(item_1='', item_2=''):
+    if len(item_1) > len(item_2):
+        return item_1
+    else:
+        return item_2
+
+
 class TestPromiseKeeper(TestCase):
     """
     A few simple tests to be used for sanity checks.
@@ -27,8 +34,28 @@ class TestPromiseKeeper(TestCase):
     def setUp(self):
         self.pk = PromiseKeeper(3)
 
-    def test_should_complete_a_task(self):
-        """Should complete a single task."""
+    def test_should_complete_a_single_task_by_promise(self):
+        """Should complete a single task (Promise)."""
+        # Implies that auto-stop is functioning properly.
+        p = Promise(slow_add, (7, 3))
+        self.pk.submit_promise(p)
+        while not p.is_ready():
+            sleep(0.01)
+        self.assertEqual(10, p.get_result())
+        self.assertIsNone(p.get_exception())
+
+    def test_should_complete_a_single_task_with_kwargs(self):
+        """Should complete a Promise using kwargs."""
+        # Implies that auto-stop is functioning properly.
+        p = self.pk.submit(get_longest, kwargs={ \
+            'item_1': 'Python', 'item_2': 'Rocks'})
+        while not p.is_ready():
+            sleep(0.01)
+        self.assertEqual('Python', p.get_result())
+        self.assertIsNone(p.get_exception())
+
+    def test_should_complete_a_single_task_by_args(self):
+        """Should complete a single task (args)."""
         # Implies that auto-stop is functioning properly.
         p = self.pk.submit(slow_add, (5, 2))
         while not p.is_ready():
