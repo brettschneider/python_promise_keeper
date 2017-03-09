@@ -3,5 +3,8 @@
 .DS_Store
 .coverage
 .env
+MANIFEST
 build
+dist
 htmlcov
+promise_keeper.egg-info
