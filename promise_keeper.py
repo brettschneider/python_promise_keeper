@@ -79,7 +79,7 @@ class PromiseKeeper(object):
             raise PromiseKeeperStateError("PromiseKeeper already running.")
         self._stop_event = Event()
         self._threads = [ \
-            _PromiseWorkerThread(self._work_queue, self._stop_event) \
+            _PromiseWorkerThread(self._work_queue, self._stop_event, self) \
             for _ in range(self._number_threads) \
         ]
         [t.start() for t in self._threads] # pylint: disable=expression-not-assigned
@@ -112,10 +112,11 @@ class PromiseKeeper(object):
 class _PromiseWorkerThread(Thread):
     """Executes the promises"""
 
-    def __init__(self, work_queue, stop_event):
+    def __init__(self, work_queue, stop_event, parent_pk):
         Thread.__init__(self)
         self._work_queue = work_queue
         self._stop_event = stop_event
+        self._parent_pk = parent_pk
 
     def run(self):
         while not self._stop_event.is_set():
@@ -135,6 +136,9 @@ class _PromiseWorkerThread(Thread):
                     promise._notify(promise) # pylint: disable=protected-access
                 except: # pylint: disable=bare-except
                     pass
+            next_promise = promise._get_next_promise()
+            if next_promise is not None:
+                self._parent_pk.submit_promise(next_promise)
             self._work_queue.task_done()
 
 
@@ -186,6 +190,7 @@ class Promise(object):
         self._completed_on = None
         self._notify = notify
         self._lock = Lock()
+        self._next_promise = None
 
     def __repr__(self):
         if self.is_ready():
@@ -296,8 +301,25 @@ class Promise(object):
         self._exception = exception
         self._lock.release()
 
+    def _get_next_promise(self):
+        """Usef by worker thread to submit another promise to teh queue."""
+        return self._next_promise
+
+    def then_do(self, task, args=[], kwargs={}, notify=None):
+        """Allows promise chaining"""
+        if self.get_started_on() != None:
+            raise PromiseStateError()
+        self._next_promise = Promise(task, args, kwargs, notify)
+        return self._next_promise
+
 
 class PromiseKeeperStateError(Exception):
     """
-    Thrown if the PromiseKeeper is in an invalid state for a given method call.
+    Raised if the PromiseKeeper is in an invalid state for a given method call.
+    """
+
+
+class PromiseStateError(Exception):
+    """
+    Raised if a Promise is in an invalidate state got a given operation.
     """

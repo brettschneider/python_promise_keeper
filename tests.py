@@ -130,7 +130,7 @@ class TestPromiseKeeper(TestCase):
                 self.promises = []
 
             def square(self, x):
-#                sleep(random() * 1)
+                sleep(random() * 0.1)
                 return x*x
 
             def generator(self):
@@ -155,4 +155,13 @@ class TestPromiseKeeper(TestCase):
 
         iterator = iter([1, 2, 3])
         self.assertRaises(TypeError, PromiseKeeper, kwds={'iterator':iterator})
+
+    def test_then_do(self):
+        """Should perform chainged tasks via then_do."""
+        pk = PromiseKeeper(auto_start=False)
+        p = pk.submit(lambda x: -x, (5,)).then_do(lambda x: x*5, (5,))
+        pk.start()
+        while pk.is_running():
+            pass
+        self.assertEqual(p.get_result(), 25)
 
