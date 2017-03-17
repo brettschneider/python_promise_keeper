@@ -3,17 +3,17 @@ Python PromiseKeeper
 ====================
 
 This module creates a multi-threaded system that you can submit work to, to be
-executed asyncrhonously.  It will return immediately with a Promise that you
+executed asynchronously.  It will return immediately with a Promise that you
 can periodically check to see if the work is done.
 
-The main idea is to instaniate an instance of the PromiseKeeper and then
+The main idea is to instantiate an instance of the PromiseKeeper and then
 submit requests for it to do work on your behalf.  It will schedule your
 request to be executed on a thread and return a Promise instance to you.
 You can look at the Promise to determine the status of the execution.
 
 The PromiseKeeper will track the results (return value) of your requested
 work and include it in the Promise that it returned to you.  If your work
-request throws an exception, the PromiseKeeper will capture the exception
+request raises an exception, the PromiseKeeper will capture the exception
 and include that in the Promise as well.
 
 Here's a quick example:
