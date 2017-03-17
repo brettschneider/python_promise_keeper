@@ -2,12 +2,12 @@ Python PromiseKeeper
 ===================
 
 This module creates a multi-threaded system that you can submit work to, to be
-executed asyncrhonously.  It will return immediately with a promise that you
+executed asynchronously.  It will return immediately with a promise that you
 can periodically check to see if the work is done.
 
-The main idea is to instaniate an instance of the PromiseKeeper and then
+The main idea is to instantiate an instance of the PromiseKeeper and then
 submit requests for it to do work on your behalf.  It will schedule your
-request to be executed on a thread and return a Promise isntance to you.
+request to be executed on a thread and return a Promise instance to you.
 You can look at the promise to determine the status of the execution.
 
 The promise keeper will track the results (return value) of your requested
@@ -44,7 +44,7 @@ Here's a quick example:
 
 The PromiseKeeper maintains an internal queue of tasks to be completed.  This
 means you can submit lots of requests for work and it will complete the
-requests in the order that it recieved them.  Here's another example:
+requests in the order that it received them.  Here's another example:
 
     #!/usr/bin/env python
 
@@ -125,6 +125,38 @@ rather than having to poll the promises to see when they're done.
 
     while pk.is_running():
         pass
+
+Finally, Promises can be chained together to form compound operations.  Each
+Promise in the chain is passes the prior Promise as an argument after it has
+executed.  Here's a trivial illustration:
+
+    #!/usr/bin/env python
+
+    from promise_keeper import PromiseKeeper
+
+    pk = PromiseKeeper(auto_start=False)
+
+    p = pk.submit(lambda x: x.upper(), ('  python is fun  ',)) \
+        .then_do(lambda x: x.get_result().strip()) \
+        .then_do(lambda x: x.get_result().split())
+
+    pk.start()
+    while not p.is_ready(): pass
+
+    print p.get_result()
+
+    ... outputs ...
+
+    ['PYTHON', 'IS', 'FUN']
+
+In the above example, the first promise up cases the string '  python is fun  '.
+The second promise takes the output of the first promise ('  PYTHON IS FUN  ')
+and strips it.  The third promise takes the output of the second promise
+('PYTHON IS FUN') and split's it.  Finally the output of the third promise
+(['PYTHON', 'IS', 'FUN']) it printed at the end.
+
+Each promise is scheduled on the work queue after the prior promise has
+completed.
 
 
 Copyright (c) 2017, Steve Brettschneider.

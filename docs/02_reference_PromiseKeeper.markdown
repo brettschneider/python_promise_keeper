@@ -13,7 +13,7 @@ arguments that you can specify that will taylor how it behaves.  There's also
 a number of methods available that will allow you to interact with it.
 
 
-###Constructor Arguments###
+### Constructor Arguments ###
 
 The PromiseKeeper has the following constructor arguments.  They are specified
 when you instantiate an instance of a PromiseKeeper.
@@ -44,7 +44,7 @@ Example usages:
     pk = PromiseKeeper(auto_start=False, auto_stop=True)
 
 
-###Methods###
+### Methods ###
 
 The PromiseKeeper has the following methods for you to interact with.
 
