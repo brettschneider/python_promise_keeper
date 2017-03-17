@@ -53,10 +53,12 @@ class PromiseKeeper(object):
             self._iterator_pump = _PromiseIteratorPump(self, iterator)
             self._iterator_pump.start()
 
-    def submit(self, task, args=[], kwargs={}, notify=None):
+    def submit(self, task, args=None, kwargs=None, notify=None):
         """
         Submit a task to be scheduled in the PromiseKeeper's thread pool.
         """
+        args = [] if args is None else args
+        kwargs = {} if kwargs is None else kwargs
         promise = Promise(task, args, kwargs, notify)
         self.submit_promise(promise)
         return promise
@@ -138,6 +140,7 @@ class _PromiseWorkerThread(Thread):
                     pass
             next_promise = promise._get_next_promise()
             if next_promise is not None:
+                next_promise._args = (promise,)
                 self._parent_pk.submit_promise(next_promise)
             self._work_queue.task_done()
 
@@ -180,10 +183,10 @@ class _PromiseIteratorPump(Thread):
 class Promise(object):
     """A promise of future results"""
 
-    def __init__(self, task, args=[], kwargs={}, notify=None):
+    def __init__(self, task, args=None, kwargs=None, notify=None):
         self._task = task
-        self._args = args
-        self._kwargs = kwargs
+        self._args = [] if args is None else args
+        self._kwargs = {} if kwargs is None else kwargs
         self._exception = None
         self._result = None
         self._started_on = None
@@ -305,11 +308,11 @@ class Promise(object):
         """Usef by worker thread to submit another promise to teh queue."""
         return self._next_promise
 
-    def then_do(self, task, args=[], kwargs={}, notify=None):
-        """Allows promise chaining"""
+    def then_do(self, task):
+        """Allow promise chaining"""
         if self.get_started_on() != None:
             raise PromiseStateError()
-        self._next_promise = Promise(task, args, kwargs, notify)
+        self._next_promise = Promise(task)
         return self._next_promise
 
 

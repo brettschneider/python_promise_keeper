@@ -158,10 +158,13 @@ class TestPromiseKeeper(TestCase):
 
     def test_then_do(self):
         """Should perform chainged tasks via then_do."""
-        pk = PromiseKeeper(auto_start=False)
-        p = pk.submit(lambda x: -x, (5,)).then_do(lambda x: x*5, (5,))
+        pk = PromiseKeeper(auto_start=False, auto_stop=False)
+        p = pk.submit(lambda x: -x, (5,)) \
+            .then_do(lambda x: x.get_result() * 5) \
+            .then_do(lambda x: x.get_result() - 5)
         pk.start()
-        while pk.is_running():
+        while not p.is_ready():
             pass
-        self.assertEqual(p.get_result(), 25)
+        pk.stop()
+        self.assertEqual(p.get_result(), -30)
 
