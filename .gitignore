@@ -9,3 +9,5 @@ build
 dist
 htmlcov
 promise_keeper.egg-info
+.pytest_cache
+.mypy_cache
