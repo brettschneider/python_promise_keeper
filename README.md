@@ -23,7 +23,7 @@ Here's a quick example:
     from random import random
     from time import sleep
 
-    def slow_square(x):
+    def slow_square(x: int) -> int:
         sleep(random() * 3)
         return x*x
 
@@ -37,10 +37,10 @@ Here's a quick example:
 
     while not promise.is_ready():
         # do other work here.
-        print '.',
+        print('.')
 
     # Check the result of your work
-    print promise.get_result()
+    print(promise.get_result())
 
 The PromiseKeeper maintains an internal queue of tasks to be completed.  This
 means you can submit lots of requests for work and it will complete the
@@ -52,7 +52,7 @@ requests in the order that it recieved them.  Here's another example:
     from random import random
     from time import sleep
 
-    def slow_square(x):
+    def slow_square(x: int) -> int:
         sleep(random() * 3)
         return x*x
 
@@ -71,7 +71,7 @@ requests in the order that it recieved them.  Here's another example:
 
     # Check the result of your work
     for promise in promises:
-        print promise.get_result()
+        print(promise.get_result())
 
 As mentioned earlier, the PromiseKeeper will even keep track of exceptions
 thrown by your code, so you don't have to worry about a crash.
@@ -82,7 +82,7 @@ thrown by your code, so you don't have to worry about a crash.
     from random import random
     from time import sleep
 
-    def slow_div(x, y):
+    def slow_div(x: int, y: int) -> int:
         sleep(random() * 1)
         return x / y
 
@@ -92,12 +92,11 @@ thrown by your code, so you don't have to worry about a crash.
     while pk.is_running():
         pass
 
-    print
     for promise in promises:
         if promise.get_exception() is None:
-            print promise.get_result()
+            print(promise.get_result())
         else:
-            print promise.get_exception()
+            print(promise.get_exception())
 
 You can even have the PromiseKeeper notify you when your promise is completed
 rather than having to poll the promises to see when they're done.
@@ -105,19 +104,19 @@ rather than having to poll the promises to see when they're done.
 
     #!/usr/bin/env python
 
-    from promise_keeper import PromiseKeeper
+    from promise_keeper import PromiseKeeper, Promise
     from random import random
     from time import sleep
 
-    def slow_div(x, y):
+    def slow_div(x: int, y: int) -> int:
         sleep(random() * 1)
         return x / y
 
-    def promise_completed(promise):
+    def promise_completed(promise: Promise) -> None:
         if promise.get_exception() is None:
-            print "Result", promise.get_result()
+            print("Result", promise.get_result())
         else:
-            print "Error", promise.get_exception()
+            print("Error", promise.get_exception())
 
     pk = PromiseKeeper(3)
     promises = [pk.submit(slow_div, (200, i), notify=promise_completed) \
