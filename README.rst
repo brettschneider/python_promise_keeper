@@ -48,5 +48,5 @@ Here's a quick example:
 More documentation and examples can be found
 `here <https://github.com/brettschneider/python_promise_keeper/tree/master/docs>`_.
 
-Copyright (c) 2017, Steve Brettschneider.
+Copyright (c) 2020, Steve Brettschneider.
 License: MIT (see LICENSE for details)

@@ -126,5 +126,5 @@ rather than having to poll the promises to see when they're done.
         pass
 
 
-Copyright (c) 2017, Steve Brettschneider.
+Copyright (c) 2020, Steve Brettschneider.
 License: MIT (see LICENSE for details)
