@@ -26,7 +26,7 @@ Here's a quick example:
     from random import random
     from time import sleep
 
-    def slow_square(x):
+    def slow_square(x: int) -> int:
         sleep(random() * 3)
         return x*x
 
@@ -40,10 +40,10 @@ Here's a quick example:
 
     while not promise.is_ready():
         # do other work here.
-        print '.',
+        print ('.')
 
     # Check the result of your work
-    print promise.get_result()
+    print(promise.get_result())
 
 More documentation and examples can be found
 `here <https://github.com/brettschneider/python_promise_keeper/tree/master/docs>`_.
