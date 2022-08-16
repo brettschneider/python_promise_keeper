@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pytest = "*"
 pytest-coverage = "*"
+twine = "*"
 
 [dev-packages]
 

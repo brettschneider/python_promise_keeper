@@ -125,6 +125,3 @@ rather than having to poll the promises to see when they're done.
     while pk.is_running():
         pass
 
-
-Copyright (c) 2020, Steve Brettschneider.
-License: MIT (see LICENSE for details)
