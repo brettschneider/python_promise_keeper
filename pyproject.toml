@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "promise_keeper"
+version = "1.0.0"
+authors = [
+    { name = "Steve Brettschneider", email = "steve@bluehousefamily.com" },
+    { name = "Rémi Desgrange", email = "remi.desgrange@camptocamp.com" }
+]
+description = "A simple async processing helper"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools]
+py-modules=['promise_keeper']
+
+[project.urls]
+"Homepage" = "https://github.com/brettschneider/python_promise_keeper"
+"Bug Tracker" = "https://github.com/brettschneider/python_promise_keeper/issues"

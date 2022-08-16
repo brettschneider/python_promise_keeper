@@ -12,3 +12,5 @@ promise_keeper.egg-info
 .pytest_cache
 .mypy_cache
 .python-version
+test_results.xml
+coverage.xml

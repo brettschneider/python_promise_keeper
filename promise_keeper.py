@@ -12,21 +12,14 @@ execution for the developer.  Sample usage:
     ...     return x+y
     ...
     >>> pc = PromiseKeeper()
-    >>> p = pc.submit(slow_add, (200, 50))
+    >>> p = pc.submit(slow_add, [200, 50])
     >>> while not p.is_ready():
     ...     sleep(0.01)
     ...
     >>> print p.get_result()
     250
     >>>
-
-Copyright (c) 2017, Steve Brettschneider.
-License: MIT (see LICENSE for details)
 """
-
-__author__ = "Steve Brettschneider"
-__version__ = "0.3"
-__license__ = "MIT"
 
 from typing import List, Any, Dict, Callable, Optional
 
@@ -267,7 +260,7 @@ class Promise:
             started_on = self._started_on
             return started_on
 
-    def _set_started_on(self, started_on) -> datetime:
+    def _set_started_on(self, started_on):
         """Used by the worker thread to set the started_on value."""
         with self._lock:
             self._started_on = started_on
@@ -309,7 +302,7 @@ class Promise:
             self._exception = exception
 
     def _get_next_promise(self) -> "Promise":
-        """Usef by worker thread to submit another promise to teh queue."""
+        """Used by worker thread to submit another promise to teh queue."""
         return self._next_promise
 
     def then_do(self, task: Callable) -> "Promise":

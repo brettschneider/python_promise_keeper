@@ -1,4 +1,0 @@
-pytest
-coverage
-black
-mypy
